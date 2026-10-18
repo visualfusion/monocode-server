@@ -64,6 +64,26 @@ else
     su - coder -c "git config --global user.name '$GIT_USER_NAME' && git config --global user.email '$GIT_USER_EMAIL' && git config --global init.defaultBranch main" 2>/dev/null || true
 fi
 
+# Configure Claude Code settings (disable Co-Authored-By attribution)
+mkdir -p /home/coder/.claude
+if [ ! -f "/home/coder/.claude/settings.json" ]; then
+    echo '{"includeCoAuthoredBy": false, "attribution": false}' > /home/coder/.claude/settings.json
+    chown -R coder:coder /home/coder/.claude
+else
+    # Ensure properties are disabled in existing settings.json
+    node -e '
+      const fs = require("fs");
+      const p = "/home/coder/.claude/settings.json";
+      try {
+        let c = JSON.parse(fs.readFileSync(p, "utf8"));
+        c.includeCoAuthoredBy = false;
+        c.attribution = false;
+        fs.writeFileSync(p, JSON.stringify(c, null, 2));
+      } catch (e) {}
+    ' 2>/dev/null || true
+    chown -R coder:coder /home/coder/.claude
+fi
+
 # Ensure Linux group 'nobody' exists (required by Google agy_acp_server.par)
 groupadd -g 65534 nobody 2>/dev/null || groupadd nobody 2>/dev/null || true
 
