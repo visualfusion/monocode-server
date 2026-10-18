@@ -48,6 +48,22 @@ if [ -f "/home/coder/.bashrc" ]; then
     fi
 fi
 
+# Configure default git user name and email if not already configured
+GIT_USER_NAME="${GIT_AUTHOR_NAME:-${GIT_COMMITTER_NAME:-Christian Hamann}}"
+GIT_USER_EMAIL="${GIT_AUTHOR_EMAIL:-${GIT_COMMITTER_EMAIL:-mail@christianhamann.de}}"
+
+if [ -f "/home/coder/.gitconfig" ]; then
+    CURRENT_GIT_NAME=$(git config --file /home/coder/.gitconfig user.name 2>/dev/null || true)
+    if [ -z "$CURRENT_GIT_NAME" ]; then
+        git config --file /home/coder/.gitconfig user.name "$GIT_USER_NAME"
+        git config --file /home/coder/.gitconfig user.email "$GIT_USER_EMAIL"
+        git config --file /home/coder/.gitconfig init.defaultBranch main
+        chown coder:coder /home/coder/.gitconfig 2>/dev/null || true
+    fi
+else
+    su - coder -c "git config --global user.name '$GIT_USER_NAME' && git config --global user.email '$GIT_USER_EMAIL' && git config --global init.defaultBranch main" 2>/dev/null || true
+fi
+
 # Ensure Linux group 'nobody' exists (required by Google agy_acp_server.par)
 groupadd -g 65534 nobody 2>/dev/null || groupadd nobody 2>/dev/null || true
 
