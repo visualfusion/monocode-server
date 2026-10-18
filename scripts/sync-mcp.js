@@ -33,28 +33,50 @@ try {
 
 const servers = centralData.mcpServers || {};
 
-// 1. Sync to Claude Code (~/.claude/.claude.json)
-const claudeConfigFile = path.join(CODER_HOME, '.claude', '.claude.json');
-try {
-  let claudeJson = {};
-  if (fs.existsSync(claudeConfigFile)) {
-    try {
-      claudeJson = JSON.parse(fs.readFileSync(claudeConfigFile, 'utf8'));
-    } catch (_) {}
-  }
-  claudeJson.mcpServers = claudeJson.mcpServers || {};
+// 1. Sync to Claude Code (~/.claude.json AND ~/.claude/.claude.json)
+const claudeTargets = [
+  path.join(CODER_HOME, '.claude.json'),
+  path.join(CODER_HOME, '.claude', '.claude.json'),
+];
 
-  // Merge central servers into Claude config
-  for (const [name, cfg] of Object.entries(servers)) {
-    claudeJson.mcpServers[name] = { ...cfg };
-  }
+for (const claudeConfigFile of claudeTargets) {
+  try {
+    let claudeJson = {};
+    if (fs.existsSync(claudeConfigFile)) {
+      try {
+        claudeJson = JSON.parse(fs.readFileSync(claudeConfigFile, 'utf8'));
+      } catch (_) {}
+    }
+    claudeJson.mcpServers = claudeJson.mcpServers || {};
 
-  const claudeDir = path.dirname(claudeConfigFile);
-  if (!fs.existsSync(claudeDir)) fs.mkdirSync(claudeDir, { recursive: true });
-  fs.writeFileSync(claudeConfigFile, JSON.stringify(claudeJson, null, 2), 'utf8');
-  console.log(`[sync-mcp] Updated Claude Code MCP servers in ${claudeConfigFile}`);
-} catch (err) {
-  console.error('[sync-mcp] Error updating Claude MCP config:', err.message);
+    for (const [name, cfg] of Object.entries(servers)) {
+      if (cfg.disabled) {
+        delete claudeJson.mcpServers[name];
+        continue;
+      }
+      if (cfg.url) {
+        const headers = cfg.headers || cfg.http_headers || {};
+        claudeJson.mcpServers[name] = {
+          type: 'http',
+          url: cfg.url,
+          ...(Object.keys(headers).length > 0 ? { headers } : {})
+        };
+      } else if (cfg.command) {
+        claudeJson.mcpServers[name] = {
+          command: cfg.command,
+          args: cfg.args || [],
+          ...(cfg.env && Object.keys(cfg.env).length > 0 ? { env: cfg.env } : {})
+        };
+      }
+    }
+
+    const dir = path.dirname(claudeConfigFile);
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(claudeConfigFile, JSON.stringify(claudeJson, null, 2), 'utf8');
+    console.log(`[sync-mcp] Updated Claude Code MCP servers in ${claudeConfigFile}`);
+  } catch (err) {
+    console.error(`[sync-mcp] Error updating ${claudeConfigFile}:`, err.message);
+  }
 }
 
 // 2. Sync to OpenAI Codex (~/.codex/config.toml)
@@ -96,9 +118,9 @@ try {
     mcpTomlBlocks.push(`\n[mcp_servers.${name}]`);
     if (cfg.url) {
       mcpTomlBlocks.push(`url = ${JSON.stringify(cfg.url)}`);
-      if (cfg.headers || cfg.http_headers) {
+      const headers = cfg.headers || cfg.http_headers;
+      if (headers && Object.keys(headers).length > 0) {
         mcpTomlBlocks.push(`\n[mcp_servers.${name}.http_headers]`);
-        const headers = cfg.headers || cfg.http_headers;
         for (const [k, v] of Object.entries(headers)) {
           mcpTomlBlocks.push(`${k} = ${JSON.stringify(v)}`);
         }
@@ -123,16 +145,41 @@ try {
   console.error('[sync-mcp] Error updating Codex MCP config:', err.message);
 }
 
-// 3. Sync to Antigravity (~/.gemini/config/mcp_config.json & symlinks)
+// 3. Sync to Antigravity (~/.gemini/config/mcp_config.json & targets)
 try {
   const geminiConfigDir = path.join(CODER_HOME, '.gemini', 'config');
   const geminiCliDir = path.join(CODER_HOME, '.gemini', 'antigravity-cli');
   const geminiAcpDir = path.join(CODER_HOME, '.gemini', 'antigravity-acp');
 
+  // Convert HTTP servers to mcp-remote for Antigravity
+  const agyServers = {};
+  for (const [name, cfg] of Object.entries(servers)) {
+    if (cfg.disabled) continue;
+    if (cfg.url) {
+      const args = ['-y', 'mcp-remote@latest', cfg.url];
+      const headers = cfg.headers || cfg.http_headers || {};
+      for (const [k, v] of Object.entries(headers)) {
+        args.push('--header', `${k}: ${v}`);
+      }
+      agyServers[name] = {
+        command: 'npx',
+        args
+      };
+    } else if (cfg.command) {
+      agyServers[name] = {
+        command: cfg.command,
+        args: cfg.args || [],
+        ...(cfg.env && Object.keys(cfg.env).length > 0 ? { env: cfg.env } : {})
+      };
+    }
+  }
+
+  const agyPayload = { mcpServers: agyServers };
+
   for (const dir of [geminiConfigDir, geminiCliDir, geminiAcpDir]) {
     if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     const targetFile = path.join(dir, 'mcp_config.json');
-    fs.writeFileSync(targetFile, JSON.stringify(centralData, null, 2), 'utf8');
+    fs.writeFileSync(targetFile, JSON.stringify(agyPayload, null, 2), 'utf8');
   }
 
   console.log(`[sync-mcp] Updated Antigravity MCP configs in ~/.gemini/`);
