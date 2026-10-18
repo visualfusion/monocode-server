@@ -108,9 +108,28 @@ COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY scripts/sync-antigravity-auth.sh /usr/local/bin/sync-antigravity-auth
 COPY scripts/sync-skills.sh /usr/local/bin/sync-skills
 COPY scripts/sync-mcp.js /usr/local/bin/sync-mcp
+COPY scripts/sync-all.sh /usr/local/bin/sync-all
+COPY scripts/monocode-status.sh /usr/local/bin/monocode-status
+COPY scripts/monocode-restart.sh /usr/local/bin/monocode-restart
+COPY scripts/monocode-logs.sh /usr/local/bin/monocode-logs
 COPY config/01-custom-header /etc/update-motd.d/01-custom-header
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/sync-antigravity-auth /usr/local/bin/sync-skills /usr/local/bin/sync-mcp /etc/update-motd.d/01-custom-header \
-    && chmod -x /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/50-motd-news /etc/update-motd.d/60-unminimize 2>/dev/null || true
+RUN chmod +x /usr/local/bin/entrypoint.sh \
+             /usr/local/bin/sync-antigravity-auth \
+             /usr/local/bin/sync-skills \
+             /usr/local/bin/sync-mcp \
+             /usr/local/bin/sync-all \
+             /usr/local/bin/monocode-status \
+             /usr/local/bin/monocode-restart \
+             /usr/local/bin/monocode-logs \
+             /etc/update-motd.d/01-custom-header \
+    && ln -sf /usr/local/bin/monocode-status /usr/local/bin/mc-status \
+    && ln -sf /usr/local/bin/monocode-restart /usr/local/bin/mc-restart \
+    && ln -sf /usr/local/bin/monocode-logs /usr/local/bin/mc-logs \
+    && chmod -x /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/50-motd-news /etc/update-motd.d/60-unminimize 2>/dev/null || true \
+    && echo "alias mc-status='monocode-status'" >> /etc/bash.bashrc \
+    && echo "alias mc-restart='monocode-restart'" >> /etc/bash.bashrc \
+    && echo "alias mc-logs='monocode-logs'" >> /etc/bash.bashrc \
+    && echo "alias sync-auth='sync-antigravity-auth'" >> /etc/bash.bashrc
 
 # Environment variables for user coder
 ENV PATH="/home/coder/.local/bin:/home/coder/.local/share/agy-acp:/usr/local/bin:$PATH"

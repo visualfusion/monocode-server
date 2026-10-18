@@ -185,6 +185,63 @@ All tokens and sessions are stored in the persistent volume `/home/coder` and su
 
 ---
 
+## Centralized Skills & MCP Management
+
+MonoCode Dev Box provides a single source of truth for custom agent skills and Model Context Protocol (MCP) servers, automatically translated and symlinked across all three coding agents (Claude Code, OpenAI Codex, and Google Antigravity).
+
+### 1. Centralized Skills (`~/.skills/`)
+Place any skill directory containing a `SKILL.md` into `/home/coder/.skills/<skill-name>/`.
+All agents automatically discover them:
+- **Claude Code**: symlinked to `~/.claude/skills/<skill-name>`
+- **OpenAI Codex**: symlinked to `~/.codex/skills/<skill-name>`
+- **Google Antigravity**: symlinked to `~/.gemini/skills/`
+
+### 2. Centralized MCP Servers (`~/.mcp/mcp-servers.json`)
+Configure your MCP servers once in standard format at `/home/coder/.mcp/mcp-servers.json`:
+
+```json
+{
+  "mcpServers": {
+    "umami": {
+      "url": "https://analytics.visualfusion.de/mcp",
+      "headers": {
+        "Authorization": "Bearer <TOKEN>"
+      }
+    },
+    "github-mcp-server": {
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github@latest"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "<TOKEN>"
+      }
+    }
+  }
+}
+```
+
+Running `sync-mcp` automatically translates and distributes configurations to:
+- **Claude Code**: `~/.claude.json` (supports HTTP endpoints & stdio)
+- **OpenAI Codex**: `~/.codex/config.toml` (supports `[mcp_servers.*]`)
+- **Google Antigravity**: `~/.gemini/config/mcp_config.json` (bridges HTTP servers via `mcp-remote`)
+
+---
+
+## CLI Shortcuts & Commands
+
+The server includes pre-configured utility commands and short aliases in your shell:
+
+| Command | Short Alias | Description |
+| :--- | :--- | :--- |
+| `mc-status` | `monocode-status` | Display status of supervisor services, listening ports, agent versions, installed skills, and MCP servers. |
+| `mc-restart` | `monocode-restart` | Restart the `monocode-host` daemon cleanly via `supervisorctl`. |
+| `mc-logs` | `monocode-logs` | View recent logs from `monocode-host` (`mc-logs -f` to follow live). |
+| `sync-all` | – | Run complete synchronization: skills (`sync-skills`), MCPs (`sync-mcp`), and Antigravity tokens (`sync-auth`). |
+| `sync-skills` | – | Synchronize skills from `~/.skills/` to Claude, Codex, and Antigravity. |
+| `sync-mcp` | – | Translate and distribute `~/.mcp/mcp-servers.json` to all agents. |
+| `sync-auth` | `sync-antigravity-auth` | Sync Antigravity CLI OAuth credentials to the Antigravity ACP daemon. |
+
+---
+
 ## Environment Variables
 
 Configure these either in Coolify's environment UI or in your `.env` file:
@@ -218,3 +275,4 @@ Configure these either in Coolify's environment UI or in your `.env` file:
 ## License
 
 Released under the [MIT License](LICENSE).
+
