@@ -67,6 +67,14 @@ if [ -x "/usr/local/bin/sync-antigravity-auth" ] && [ -f "/home/coder/.gemini/an
     /usr/local/bin/sync-antigravity-auth 2>/dev/null || true
 fi
 
+# Auto-sync centralized skills and MCP servers across Claude, Codex, and Antigravity
+if [ -x "/usr/local/bin/sync-skills" ]; then
+    /usr/local/bin/sync-skills 2>/dev/null || true
+fi
+if [ -x "/usr/local/bin/sync-mcp" ]; then
+    /usr/local/bin/sync-mcp 2>/dev/null || true
+fi
+
 echo "=== MonoCode Remote Dev Box ready ==="
 echo "SSH daemon listening on port 22 (forwarded to host port)"
 echo "MonoCode Host binding to 127.0.0.1:3774"

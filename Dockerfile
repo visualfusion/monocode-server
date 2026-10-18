@@ -106,8 +106,10 @@ RUN mkdir -p /var/log/supervisor /home/coder/.skills /home/coder/.config /home/c
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
 COPY scripts/sync-antigravity-auth.sh /usr/local/bin/sync-antigravity-auth
+COPY scripts/sync-skills.sh /usr/local/bin/sync-skills
+COPY scripts/sync-mcp.js /usr/local/bin/sync-mcp
 COPY config/01-custom-header /etc/update-motd.d/01-custom-header
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/sync-antigravity-auth /etc/update-motd.d/01-custom-header \
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/sync-antigravity-auth /usr/local/bin/sync-skills /usr/local/bin/sync-mcp /etc/update-motd.d/01-custom-header \
     && chmod -x /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/50-motd-news /etc/update-motd.d/60-unminimize 2>/dev/null || true
 
 # Environment variables for user coder
