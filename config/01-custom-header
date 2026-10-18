@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+# ANSI Color Codes
+RESET="\033[0m"
+
+# Gradient for ASCII Banner (MonoCode)
+C1="\033[38;5;51m"   # Bright Cyan
+C2="\033[38;5;45m"   # Sky Blue
+C3="\033[38;5;39m"   # Royal Blue
+C4="\033[38;5;141m"  # Soft Violet
+C5="\033[38;5;171m"  # Magenta
+
+# Information Table Colors
+LABEL="\033[38;5;250m"
+VAL="\033[38;5;255m"
+GREEN="\033[38;5;48m"
+RED="\033[38;5;196m"
+LINE="\033[38;5;240m"
+
+# System Metrics
+UPTIME=$(uptime -p 2>/dev/null | sed 's/up //' | sed 's/ days\?,/d /' | sed 's/ hours\?,/h /' | sed 's/ minutes\?/m/' | tr -d ' ' | sed -E 's/([0-9]+h)([0-9]+m)/\1 \2/' | sed -E 's/([0-9]+d)([0-9]+h)/\1 \2/')
+[ -z "$UPTIME" ] && UPTIME=$(uptime | awk -F'( |,|:)+' '{print $6 "h " $7 "m"}')
+
+MEM_USED=$(free -m 2>/dev/null | awk '/Mem:/ {printf "%.1fG", $3/1024}')
+MEM_TOTAL=$(free -m 2>/dev/null | awk '/Mem:/ {printf "%.1fG", $2/1024}')
+MEM_PCT=$(free -m 2>/dev/null | awk '/Mem:/ {printf "%d%%", ($3/$2)*100}')
+
+DISK_USED=$(df -h /home/coder/workspace 2>/dev/null | awk 'NR==2 {print $3}')
+DISK_TOTAL=$(df -h /home/coder/workspace 2>/dev/null | awk 'NR==2 {print $2}')
+DISK_PCT=$(df -h /home/coder/workspace 2>/dev/null | awk 'NR==2 {print $5}')
+
+# Agent CLI Versions
+CLAUDE_VER=$(claude --version 2>/dev/null | awk '{print $1}')
+[ -n "$CLAUDE_VER" ] && CLAUDE_DISP="v$CLAUDE_VER" || CLAUDE_DISP="not installed"
+
+CODEX_VER=$(codex --version 2>/dev/null | awk '{print $2}')
+[ -n "$CODEX_VER" ] && CODEX_DISP="v$CODEX_VER" || CODEX_DISP="not installed"
+
+AGY_VER=$(agy --version 2>/dev/null | head -n 1)
+[ -n "$AGY_VER" ] && AGY_DISP="v$AGY_VER (Refined ACP)" || AGY_DISP="not installed"
+
+# Daemon status check
+if curl -s -m 1 http://127.0.0.1:3774/health >/dev/null 2>&1 || netstat -tlpn 2>/dev/null | grep -q 3774 || ss -tlpn 2>/dev/null | grep -q 3774 || supervisorctl status monocode-host 2>/dev/null | grep -q RUNNING; then
+    HOST_STATUS="${GREEN}online${RESET} ${VAL}(127.0.0.1:3774)${RESET}"
+else
+    HOST_STATUS="${RED}offline${RESET}"
+fi
+
+# Print ASCII Banner
+echo ""
+echo -e "${C1}             __  ___                    ______          __   ${RESET}"
+echo -e "${C2}            /  |/  /___  ____  ____    / ____/___  ____/ /__ ${RESET}"
+echo -e "${C3}           / /|_/ / __ \\/ __ \\/ __ \\  / /   / __ \\/ __  / _ \\\\${RESET}"
+echo -e "${C4}          / /  / / /_/ / / / / /_/ / / /___/ /_/ / /_/ /  __/${RESET}"
+echo -e "${C5}         /_/  /_/\\____/_/ /_/\\____/  \\____/\\____/\\__,_/\\___/ ${RESET}"
+echo ""
+echo -e "${LINE}  ─────────────────────────────────────────────────────────────────${RESET}"
+printf "  ${LABEL}%-13s${RESET} ${VAL}%-23s${RESET} ${LABEL}%-12s${RESET} ${VAL}%s${RESET}\n" "OS:" "Ubuntu 24.04 LTS" "Uptime:" "$UPTIME"
+printf "  ${LABEL}%-13s${RESET} %-32b ${LABEL}%-12s${RESET} ${VAL}%s${RESET}\n" "Daemon:" "$HOST_STATUS" "Memory:" "$MEM_USED / $MEM_TOTAL ($MEM_PCT)"
+printf "  ${LABEL}%-13s${RESET} ${VAL}%-23s${RESET} ${LABEL}%-12s${RESET} ${VAL}%s${RESET}\n" "Claude Code:" "$CLAUDE_DISP" "Codex:" "$CODEX_DISP"
+printf "  ${LABEL}%-13s${RESET} ${VAL}%-23s${RESET} ${LABEL}%-12s${RESET} ${VAL}%s${RESET}\n" "Antigravity:" "$AGY_DISP" "Workspace:" "$DISK_USED / $DISK_TOTAL ($DISK_PCT)"
+echo -e "${LINE}  ─────────────────────────────────────────────────────────────────${RESET}"
+echo ""

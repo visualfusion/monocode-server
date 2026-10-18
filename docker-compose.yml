@@ -1,0 +1,56 @@
+# Docker Compose configuration for MonoCode Remote Dev Box
+# Compatible with Coolify, Portainer, and standard Docker Compose
+
+services:
+  monocode-dev-box:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: monocode-dev-box:latest
+    container_name: monocode-dev-box
+    hostname: monocode
+    restart: unless-stopped
+    ports:
+      # Only the SSH port is exposed. The internal port 3774 for monocode-host stays localhost-only!
+      - "${MONOCODE_SSH_PORT:-2222}:22"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${TZ:-UTC}
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GITHUB_TOKEN=${GITHUB_TOKEN:-}
+      - CODEX_API_KEY=${CODEX_API_KEY:-}
+      - CLAUDE_CONFIG_DIR=/home/coder/.claude
+      - CODEX_HOME=/home/coder/.codex
+    volumes:
+      # Project repositories & development workspaces
+      - monocode-workspaces:/home/coder/workspace
+      # Persistent user home (auth tokens, Pro logins, SSH keys, shell history)
+      - monocode-home:/home/coder
+      # Custom AI Agent Skills directory
+      - monocode-skills:/home/coder/.skills
+      # MonoCode session state & cache
+      - monocode-host-data:/home/coder/.monocode-host
+      # Persistent SSH host keys (prevents host key mismatch warnings on container rebuilds)
+      - monocode-ssh-host-keys:/etc/ssh/host_keys
+    deploy:
+      resources:
+        limits:
+          # Resource limits to ensure fair sharing on multi-tenant or small VPS instances
+          cpus: '${MONOCODE_CPU_LIMIT:-2.5}'
+          memory: ${MONOCODE_MEMORY_LIMIT:-3072M}
+        reservations:
+          memory: 512M
+
+volumes:
+  monocode-workspaces:
+    name: monocode_workspaces
+  monocode-home:
+    name: monocode_home
+  monocode-skills:
+    name: monocode_skills
+  monocode-host-data:
+    name: monocode_host_data
+  monocode-ssh-host-keys:
+    name: monocode_ssh_host_keys

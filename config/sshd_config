@@ -1,0 +1,31 @@
+# SSH Daemon Hardening for MonoCode Dev Box
+Port 22
+AddressFamily any
+ListenAddress 0.0.0.0
+
+# Security Hardening
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+AuthorizedKeysFile .ssh/authorized_keys
+ChallengeResponseAuthentication no
+KerberosAuthentication no
+GSSAPIAuthentication no
+X11Forwarding no
+
+# Keep-alive settings for stable remote sessions
+ClientAliveInterval 30
+ClientAliveCountMax 10
+TCPKeepAlive yes
+
+# Allow port forwarding for SSH tunnels (MonoCode Host daemon forwarding)
+AllowTcpForwarding yes
+PermitTunnel yes
+AllowAgentForwarding yes
+
+# Logging
+LogLevel INFO
+SyslogFacility AUTH
+
+# Environment variables loading
+UsePAM yes
