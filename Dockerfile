@@ -41,13 +41,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix fd binary naming and install lazygit
+# Fix fd binary naming, install lazygit and starship prompt
 RUN ln -sf $(which fdfind) /usr/local/bin/fd \
     && LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -o '"tag_name": "v[^"]*"' | head -n 1 | cut -d '"' -f 4 | sed 's/^v//') \
     && curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" \
     && tar -xf /tmp/lazygit.tar.gz -C /tmp lazygit \
     && install /tmp/lazygit /usr/local/bin \
-    && rm -f /tmp/lazygit*
+    && rm -f /tmp/lazygit* \
+    && curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
 
 # 2. Install Node.js 22 LTS, npm, pnpm & Bun
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
@@ -110,8 +111,11 @@ RUN git clone --depth 1 https://github.com/hardbeat920/monocode.git /opt/monocod
 
 # 8. Setup Application & Supervisor Structure
 WORKDIR /home/coder/workspace
-RUN mkdir -p /var/log/supervisor /home/coder/.skills /home/coder/.config /home/coder/.monocode-host \
+RUN mkdir -p /var/log/supervisor /home/coder/.skills /home/coder/.config /home/coder/.monocode-host /opt/monocode/config /etc/skel/.config \
     && chown -R coder:coder /home/coder
+
+COPY config/starship.toml /opt/monocode/config/starship.toml
+COPY config/starship.toml /etc/skel/.config/starship.toml
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh

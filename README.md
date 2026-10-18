@@ -226,6 +226,16 @@ Running `sync-mcp` automatically translates and distributes configurations to:
 
 ---
 
+## Shell & Git Prompt (Starship)
+
+The container comes with **Starship** pre-configured for a fast, minimal single-line prompt in Bash:
+- **Instant Rendering**: Written in Rust, running in < 5ms without external plugins or daemons.
+- **Git Status**: Real-time display of branch (` main`), uncommitted/modified files (`!`), staged changes (`+`), untracked files (`?`), stashes (`*`), and ahead/behind sync indicators (`⇡`/`⇣`).
+- **Single-Line Layout**: Clean and compact (`coder@monocode in repo on  main !1 ❯`).
+- **Configuration**: Custom settings persist at `/home/coder/.config/starship.toml`.
+
+---
+
 ## CLI Shortcuts & Commands
 
 The server includes pre-configured utility commands and short aliases in your shell:

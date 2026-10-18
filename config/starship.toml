@@ -1,0 +1,62 @@
+# Starship configuration for MonoCode Server
+
+# No blank line before prompt
+add_newline = false
+
+# Timeout for commands like git (in milliseconds)
+command_timeout = 1000
+
+# Single-line prompt format: all on one line
+format = "$username$hostname in $directory$git_branch$git_status$character"
+
+[username]
+show_always = true
+style_user = "bold green"
+format = "[$user]($style)@"
+
+[hostname]
+ssh_only = false
+style = "bold green"
+format = "[$hostname]($style) "
+
+[directory]
+style = "bold cyan"
+truncation_length = 3
+truncate_to_repo = true
+format = "[$path]($style) "
+
+[git_branch]
+style = "bold purple"
+symbol = " "
+format = "on [$symbol$branch]($style) "
+
+[git_status]
+style = "bold yellow"
+format = "([$all_status$ahead_behind]($style) )"
+conflicted = "="
+ahead = "⇡${count}"
+behind = "⇣${count}"
+diverged = "⇕⇡${ahead_count}⇣${behind_count}"
+untracked = "?${count}"
+stashed = "*"
+modified = "!${count}"
+staged = "+${count}"
+renamed = "»${count}"
+deleted = "✘${count}"
+
+# Deaktiviert Toolchain-/Runtime-Versionen (Node, Python, Rust etc.)
+[nodejs]
+disabled = true
+
+[package]
+disabled = true
+
+[python]
+disabled = true
+
+[rust]
+disabled = true
+
+[character]
+success_symbol = "[❯](bold green) "
+error_symbol = "[❯](bold red) "

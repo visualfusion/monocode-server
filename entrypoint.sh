@@ -37,13 +37,25 @@ chmod 644 /etc/ssh/ssh_host_*_key.pub 2>/dev/null || true
 # Export container environment variables to /etc/environment and coder shell profiles
 # so SSH login sessions automatically inherit all Coolify env variables
 export -p | grep -E 'ANTHROPIC_|OPENAI_|GITHUB_|CODEX_|CLAUDE_|PUID|PGID|TZ' > /etc/environment || true
+
+# Bootstrap Starship prompt configuration
+mkdir -p /home/coder/.config
+if [ ! -f "/home/coder/.config/starship.toml" ] && [ -f "/opt/monocode/config/starship.toml" ]; then
+    cp /opt/monocode/config/starship.toml /home/coder/.config/starship.toml
+    chown -R coder:coder /home/coder/.config
+fi
+
 if [ -f "/home/coder/.bashrc" ]; then
     # Prevent duplicate sourcing
     if ! grep -q "/etc/environment" /home/coder/.bashrc; then
         echo '[ -f /etc/environment ] && set -a && . /etc/environment && set +a' >> /home/coder/.bashrc
     fi
-    # Ensure custom prompt with monocode hostname
-    if ! grep -q "coder@monocode" /home/coder/.bashrc; then
+    # Initialize Starship prompt if starship is installed
+    if command -v starship >/dev/null 2>&1; then
+        if ! grep -q "starship init bash" /home/coder/.bashrc; then
+            echo 'eval "$(starship init bash)"' >> /home/coder/.bashrc
+        fi
+    elif ! grep -q "coder@monocode" /home/coder/.bashrc; then
         echo 'export PS1="\[\033[01;32m\]\u@monocode\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ "' >> /home/coder/.bashrc
     fi
 fi
