@@ -19,8 +19,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     git \
     git-lfs \
+    gh \
     ripgrep \
     fd-find \
+    fzf \
+    tree \
+    sqlite3 \
+    poppler-utils \
     jq \
     tmux \
     htop \
@@ -36,8 +41,13 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3-venv \
     && rm -rf /var/lib/apt/lists/*
 
-# Fix fd binary naming on Debian/Ubuntu
-RUN ln -sf $(which fdfind) /usr/local/bin/fd
+# Fix fd binary naming and install lazygit
+RUN ln -sf $(which fdfind) /usr/local/bin/fd \
+    && LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -o '"tag_name": "v[^"]*"' | head -n 1 | cut -d '"' -f 4 | sed 's/^v//') \
+    && curl -Lo /tmp/lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" \
+    && tar -xf /tmp/lazygit.tar.gz -C /tmp lazygit \
+    && install /tmp/lazygit /usr/local/bin \
+    && rm -f /tmp/lazygit*
 
 # 2. Install Node.js 22 LTS, npm, pnpm & Bun
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \

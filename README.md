@@ -78,7 +78,7 @@ flowchart LR
 | **Base System** | Ubuntu 24.04 LTS (`x86_64`) |
 | **User** | `coder` (UID 1000, unprivileged, passwordless sudo enabled) |
 | **Toolchains** | Node.js 22 LTS (`npm`, `pnpm`, `bun`), Python 3.12 with `uv` & `uvx`, Git |
-| **Utilities** | `ripgrep`, `fd-find`, `jq`, `tmux`, `build-essential`, `curl`, `rsync` |
+| **Utilities** | `gh` (GitHub CLI), `lazygit`, `ripgrep`, `fd-find`, `fzf`, `tree`, `sqlite3`, `poppler-utils`, `jq`, `tmux`, `htop`, `build-essential`, `curl` |
 | **Agent: Claude** | `@anthropic-ai/claude-code` (`claude`) |
 | **Agent: Codex** | `@openai/codex` (`codex`) |
 | **Agent: Antigravity** | Google Antigravity CLI (`agy`) + Refined ACP Server (`agy_acp_server.par`) |
