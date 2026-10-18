@@ -120,6 +120,7 @@ COPY scripts/sync-skills.sh /usr/local/bin/sync-skills
 COPY scripts/sync-mcp.js /usr/local/bin/sync-mcp
 COPY scripts/sync-all.sh /usr/local/bin/sync-all
 COPY scripts/update-agents.sh /usr/local/bin/update-agents
+COPY scripts/monocode-update.sh /usr/local/bin/monocode-update
 COPY scripts/monocode-status.sh /usr/local/bin/monocode-status
 COPY scripts/monocode-restart.sh /usr/local/bin/monocode-restart
 COPY scripts/monocode-logs.sh /usr/local/bin/monocode-logs
@@ -130,6 +131,7 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
              /usr/local/bin/sync-mcp \
              /usr/local/bin/sync-all \
              /usr/local/bin/update-agents \
+             /usr/local/bin/monocode-update \
              /usr/local/bin/monocode-status \
              /usr/local/bin/monocode-restart \
              /usr/local/bin/monocode-logs \
@@ -138,11 +140,13 @@ RUN chmod +x /usr/local/bin/entrypoint.sh \
     && ln -sf /usr/local/bin/monocode-restart /usr/local/bin/mc-restart \
     && ln -sf /usr/local/bin/monocode-logs /usr/local/bin/mc-logs \
     && ln -sf /usr/local/bin/update-agents /usr/local/bin/mc-update \
+    && ln -sf /usr/local/bin/monocode-update /usr/local/bin/mc-selfupdate \
     && chmod -x /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/50-motd-news /etc/update-motd.d/60-unminimize 2>/dev/null || true \
     && echo "alias mc-status='monocode-status'" >> /etc/bash.bashrc \
     && echo "alias mc-restart='monocode-restart'" >> /etc/bash.bashrc \
     && echo "alias mc-logs='monocode-logs'" >> /etc/bash.bashrc \
     && echo "alias mc-update='update-agents'" >> /etc/bash.bashrc \
+    && echo "alias mc-selfupdate='monocode-update'" >> /etc/bash.bashrc \
     && echo "alias sync-auth='sync-antigravity-auth'" >> /etc/bash.bashrc
 
 # Environment variables for user coder

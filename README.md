@@ -234,6 +234,7 @@ The server includes pre-configured utility commands and short aliases in your sh
 | :--- | :--- | :--- |
 | `mc-status` | `monocode-status` | Display status of supervisor services, listening ports, agent versions, installed skills, and MCP servers. |
 | `mc-update` | `update-agents` | Update all AI agent CLIs (Claude Code, OpenAI Codex, Refined Antigravity ACP) to their latest versions and restart host. |
+| `mc-selfupdate` | `monocode-update` | Pull latest MonoCode host code from upstream (`hardbeat920/monocode`), re-apply patches, rebuild, and restart daemon. |
 | `mc-restart` | `monocode-restart` | Restart the `monocode-host` daemon cleanly via `supervisorctl`. |
 | `mc-logs` | `monocode-logs` | View recent logs from `monocode-host` (`mc-logs -f` to follow live). |
 | `sync-all` | – | Run complete synchronization: skills (`sync-skills`), MCPs (`sync-mcp`), and Antigravity tokens (`sync-auth`). |
