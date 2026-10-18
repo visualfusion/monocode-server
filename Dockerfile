@@ -92,6 +92,7 @@ RUN groupadd -g 65534 nobody 2>/dev/null || groupadd nobody 2>/dev/null || true 
 # 7. Setup MonoCode Host Daemon
 WORKDIR /opt/monocode
 RUN git clone --depth 1 https://github.com/hardbeat920/monocode.git /opt/monocode \
+    && sed -i 's/: provider === "codex" || provider === "claude"/: true/' /opt/monocode/host/server.ts \
     && npm install \
     && npm run host:build \
     && ln -s /opt/monocode/build/host/monocode-host.mjs /usr/local/bin/monocode-host \

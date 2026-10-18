@@ -57,6 +57,11 @@ if [ -f "/home/coder/.local/share/antigravity-acp/localharness_external" ]; then
     ln -sf /home/coder/.local/share/antigravity-acp/localharness_external /usr/local/bin/localharness_external
 fi
 
+# Ensure MonoCode host allows all detected providers (like antigravity) when supportedProviders is omitted
+if [ -f "/opt/monocode/build/host/monocode-host.mjs" ]; then
+    sed -i 's/: provider === "codex" || provider === "claude"/: true/g' /opt/monocode/build/host/monocode-host.mjs 2>/dev/null || true
+fi
+
 # Auto-sync Antigravity CLI OAuth credentials to Antigravity ACP if available
 if [ -x "/usr/local/bin/sync-antigravity-auth" ] && [ -f "/home/coder/.gemini/antigravity-cli/antigravity-oauth-token" ]; then
     /usr/local/bin/sync-antigravity-auth 2>/dev/null || true
