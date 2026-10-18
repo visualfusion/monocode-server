@@ -48,6 +48,20 @@ if [ -f "/home/coder/.bashrc" ]; then
     fi
 fi
 
+# Ensure Linux group 'nobody' exists (required by Google agy_acp_server.par)
+groupadd -g 65534 nobody 2>/dev/null || groupadd nobody 2>/dev/null || true
+
+# Symlink localharness if present for Antigravity ACP integration
+if [ -f "/home/coder/.local/share/antigravity-acp/localharness_external" ]; then
+    ln -sf /home/coder/.local/share/antigravity-acp/localharness_external /usr/local/bin/localharness
+    ln -sf /home/coder/.local/share/antigravity-acp/localharness_external /usr/local/bin/localharness_external
+fi
+
+# Auto-sync Antigravity CLI OAuth credentials to Antigravity ACP if available
+if [ -x "/usr/local/bin/sync-antigravity-auth" ] && [ -f "/home/coder/.gemini/antigravity-cli/antigravity-oauth-token" ]; then
+    /usr/local/bin/sync-antigravity-auth 2>/dev/null || true
+fi
+
 echo "=== MonoCode Remote Dev Box ready ==="
 echo "SSH daemon listening on port 22 (forwarded to host port)"
 echo "MonoCode Host binding to 127.0.0.1:3774"

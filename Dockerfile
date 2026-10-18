@@ -80,10 +80,13 @@ RUN curl -fsSL "https://storage.googleapis.com/antigravity-public/antigravity-cl
     && rm -f /tmp/agy.tar.gz
 
 # - Refined Antigravity ACP & agy_acp_server.par for MonoCode integration
-RUN npm install -g @simonepri/refined-antigravity-acp
-RUN su - coder -c "refined-antigravity-acp setup --yes" || true \
+RUN groupadd -g 65534 nobody 2>/dev/null || groupadd nobody 2>/dev/null || true \
+    && npm install -g @simonepri/refined-antigravity-acp \
+    && su - coder -c "refined-antigravity-acp setup --yes" || true \
     && mkdir -p /home/coder/.local/share/agy-acp \
     && ln -sf /home/coder/.local/share/antigravity-acp/agy_acp_server.par /home/coder/.local/share/agy-acp/agy_acp_server.par \
+    && ln -sf /home/coder/.local/share/antigravity-acp/localharness_external /usr/local/bin/localharness \
+    && ln -sf /home/coder/.local/share/antigravity-acp/localharness_external /usr/local/bin/localharness_external \
     && chown -R coder:coder /home/coder/.local
 
 # 7. Setup MonoCode Host Daemon
@@ -101,12 +104,14 @@ RUN mkdir -p /var/log/supervisor /home/coder/.skills /home/coder/.config /home/c
 
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY scripts/sync-antigravity-auth.sh /usr/local/bin/sync-antigravity-auth
 COPY config/01-custom-header /etc/update-motd.d/01-custom-header
-RUN chmod +x /usr/local/bin/entrypoint.sh /etc/update-motd.d/01-custom-header \
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/sync-antigravity-auth /etc/update-motd.d/01-custom-header \
     && chmod -x /etc/update-motd.d/00-header /etc/update-motd.d/10-help-text /etc/update-motd.d/50-motd-news /etc/update-motd.d/60-unminimize 2>/dev/null || true
 
 # Environment variables for user coder
 ENV PATH="/home/coder/.local/bin:/home/coder/.local/share/agy-acp:/usr/local/bin:$PATH"
+ENV ANTIGRAVITY_HARNESS_PATH="/usr/local/bin/localharness"
 
 EXPOSE 22
 
