@@ -276,7 +276,8 @@ Configure these either in Coolify's environment UI or in your `.env` file:
 1. **No Direct Daemon Exposure**: `monocode-host` strictly binds to `127.0.0.1:3774`. Only SSH port `2222` is exposed.
 2. **Key-Only SSH Hardening**: Password authentication is disabled (`PasswordAuthentication no`); root login is forbidden (`PermitRootLogin no`).
 3. **Host Isolation**: The host Docker socket (`/var/run/docker.sock`) is not mounted into the container.
-4. **Volume Persistence**:
+4. **Image Hygiene & Vulnerability Pruning**: The base image upgrades Ubuntu security patches on build, installs the official GitHub CLI repository (avoiding legacy Go runtime vulnerabilities), and aggressively prunes build dependencies (`node_modules`) after bundling `monocode-host.mjs`.
+5. **Volume Persistence**:
    - `monocode_workspaces`: `/home/coder/workspace`
    - `monocode_home`: `/home/coder`
    - `monocode_ssh_host_keys`: `/etc/ssh/host_keys`

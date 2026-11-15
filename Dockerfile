@@ -9,7 +9,7 @@ ENV LANG=C.UTF-8
 ENV LC_ALL=C.UTF-8
 
 # 1. Install base utilities and dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
+RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-recommends \
     bash \
     zsh \
     openssh-server \
@@ -19,7 +19,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     wget \
     git \
     git-lfs \
-    gh \
     ripgrep \
     fd-find \
     fzf \
@@ -39,6 +38,11 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3 \
     python3-pip \
     python3-venv \
+    && mkdir -p -m 755 /etc/apt/keyrings \
+    && curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg -o /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" > /etc/apt/sources.list.d/github-cli.list \
+    && apt-get update && apt-get install -y --no-install-recommends gh \
     && rm -rf /var/lib/apt/lists/*
 
 # Fix fd binary naming, install lazygit and starship prompt
@@ -106,6 +110,7 @@ RUN git clone --depth 1 https://github.com/hardbeat920/monocode.git /opt/monocod
     && sed -i 's/: provider === "codex" || provider === "claude"/: true/' /opt/monocode/host/server.ts \
     && npm install \
     && npm run host:build \
+    && rm -rf /opt/monocode/node_modules /root/.npm \
     && ln -s /opt/monocode/build/host/monocode-host.mjs /usr/local/bin/monocode-host \
     && chmod +x /opt/monocode/build/host/monocode-host.mjs || true
 

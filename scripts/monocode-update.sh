@@ -39,6 +39,9 @@ echo "-> Building monocode-host..."
 npm run host:build
 chmod +x /opt/monocode/build/host/monocode-host.mjs
 
+echo "-> Pruning build dependencies..."
+rm -rf /opt/monocode/node_modules /root/.npm /home/coder/.npm
+
 echo "-> Restarting monocode-host service..."
 supervisorctl restart monocode-host
 
