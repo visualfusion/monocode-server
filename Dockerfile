@@ -18,10 +18,8 @@ RUN apt-get update && apt-get upgrade -y && apt-get install -y --no-install-reco
     curl \
     wget \
     git \
-    git-lfs \
     ripgrep \
     fd-find \
-    fzf \
     tree \
     sqlite3 \
     poppler-utils \
@@ -54,10 +52,10 @@ RUN ln -sf $(which fdfind) /usr/local/bin/fd \
     && rm -f /tmp/lazygit* \
     && curl -sS https://starship.rs/install.sh | sh -s -- --yes --bin-dir /usr/local/bin
 
-# 2. Install Node.js 22 LTS, npm, pnpm & Bun
+# 2. Install Node.js 22 LTS, npm (latest), pnpm & Bun
 RUN curl -fsSL https://deb.nodesource.com/setup_22.x | bash - \
     && apt-get install -y --no-install-recommends nodejs \
-    && npm install -g pnpm bun \
+    && npm install -g npm@latest pnpm bun \
     && rm -rf /var/lib/apt/lists/*
 
 # 3. Install Python uv (fast package and MCP runner)
